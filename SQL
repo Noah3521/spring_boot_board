@@ -1,0 +1,47 @@
+-- 오라클 21c 기준으로 작성된 쿼리입니다
+
+-- 기존 테이블 및 시퀀스 삭제
+drop sequence board_seq;
+drop table board;
+
+-- idx자동 증가 구현을 위해 시퀀스 생성
+create sequence board_seq
+    start with 1
+    maxvalue 99999
+    increment by 1
+    nocycle
+    nocache;
+
+-- 테이블 생성
+create table board(
+	id number default board_seq.nextval primary key,
+	title VARCHAR2(45) not null,
+	content clob not null
+);
+
+-- 더미 데이터 추가용 프로시저 생성
+CREATE OR REPLACE PROCEDURE testDataInsert AS
+    i NUMBER := 1;
+BEGIN
+    WHILE i <= 120 LOOP
+        INSERT INTO board(title, content)
+        VALUES('제목' || TO_CHAR(i), '내용' || TO_CHAR(i));
+        i := i + 1;
+    END LOOP;
+END testDataInsert;
+/
+
+-- 프로시저 실행
+BEGIN
+	testDataInsert;
+END;
+/
+commit;
+
+
+-- 파일 업로드를 위해 파일 이름과 경로를 저장할 컬럼 추가
+ALTER TABLE board
+ADD (file_name VARCHAR2(150), file_path VARCHAR2(300));
+
+-- 테이블 조회
+SELECT * from board order by id desc;
